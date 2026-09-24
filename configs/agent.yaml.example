@@ -1,0 +1,104 @@
+# Lynx EDR agent configuration.
+# All paths are relative to the install dir unless absolute.
+# Copy this file to configs/agent.yaml and fill in your secrets.
+
+agent:
+  name: "lynx-agent"
+  poll_interval: 2            # seconds between detection sweeps
+  log_level: "INFO"          # DEBUG | INFO | WARN | ERROR
+
+# Which log files to tail and what patterns indicate an attack.
+log_monitor:
+  enabled: true
+  files:
+    - "/var/log/auth.log"
+    - "/var/log/syslog"
+  # Each pattern: name -> regex; a match raises an alert of the given severity.
+  patterns:
+    ssh_failed_login:     "Failed password for .* from (?P<ip>\\d+\\.\\d+\\.\\d+\\.\\d+)"
+    ssh_invalid_user:     "Invalid user .* from (?P<ip>\\d+\\.\\d+\\.\\d+\\.\\d+)"
+    sudo_failure:         "sudo: .* command not found|COMMAND=.*authentication failure"
+    su_failure:           "authentication failure.*su"
+    root_login:           "Accepted (publickey|password) for root"
+
+# File integrity monitoring.
+fim:
+  enabled: true
+  watch_dirs:
+    - "/etc"
+    - "/home"
+    - "/root"
+    - "/opt"
+    - "/var/www"
+  # Safety: sensitive dirs won't be watched unless you opt in (see backup block).
+  allow_sensitive_dirs: false
+  ignore_extensions: [".swp", ".tmp", ".pyc", ".log"]
+  max_events_per_sweep: 200
+
+# Process monitoring.
+process_monitor:
+  enabled: true
+  suspicious_names: ["minerd", "xmrig", "kworkerds", "kinsing", "crack", "brute", "xmrminer"]
+  high_cpu_threshold: 90.0     # % CPU that triggers an alert
+
+# Network IDS.
+network_ids:
+  enabled: true
+  watch_ports: [22, 80, 443, 445, 3389]
+  scan_threshold: 8            # connections from one IP to >= N distinct ports = port scan
+  brute_force_threshold: 5     # failed auths from one IP in a window = brute force
+  window_seconds: 30
+  capture_packets: false       # set true + install scapy for raw packet analysis
+  iface: "eth0"
+
+# Blocking (adds nftables rules to drop attacker IP/MAC).
+blocking:
+  enabled: true
+  backend: "nftables"          # nftables (recommended) | iptables | dry-run
+  table_name: "lynx_block"
+  max_auto_blocks: 100
+  dry_run: false                # false = real blocking enabled
+
+# Continuous backup / versioning.
+backup:
+  enabled: true
+  source_dirs:
+    - "/etc"
+    - "/home"
+    - "/root"
+    - "/opt"
+    - "/var/www"
+  # Safety: sensitive dirs (/home, /etc, /, etc.) are NOT backed up unless you
+  # explicitly opt in — because first run does a full baseline copy of every file.
+  allow_sensitive_dirs: false
+  backup_root: "backup"        # where versioned copies + manifest live
+  exclude: ["backup", "evidence", "logs"]
+  max_versions_per_file: 20
+
+# Alerting.
+alerting:
+  local_file: "logs/alerts.json"   # JSONL of all alerts
+  webhook_url: ""                  # e.g. Slack/Teams incoming webhook
+  telegram:                        # optional; leave empty to disable
+    bot_token: "YOUR_BOT_TOKEN_HERE"
+    chat_id: "YOUR_CHAT_ID_HERE"
+
+# Evidence / ledger.
+ledger:
+  db_path: "evidence/ledger.db"
+
+# Web dashboard (access the agent from a browser).
+web:
+  enabled: true
+  host: "0.0.0.0"             # 0.0.0.0 = reachable from other machines on your network
+  port: 8090
+  auth_token: "YOUR_AUTH_TOKEN_HERE"              # set a secret to require ?token=... or header
+
+# Manager / Enrollment (for agent fleet management)
+manager:
+  enabled: true
+  url: "https://YOUR_MANAGER_IP:8443"
+  ca_cert: "certs/ca.crt"
+  agent_cert: "certs/agent.crt"
+  agent_key: "certs/agent.key"
+  heartbeat_interval: 30

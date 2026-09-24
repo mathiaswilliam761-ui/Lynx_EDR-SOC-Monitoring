@@ -1,0 +1,42 @@
+# Secrets & Config
+configs/agent.yaml
+.env
+*.env
+
+# Data & Runtime
+evidence/
+backup/
+logs/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary
+*.tmp
+*.temp
+/tmp/
+
+# Manager secrets
+manager/enrollment_tokens.json
+manager/agent_registry.json
+manager/ca/ca.key
+manager/ca/ca.crt

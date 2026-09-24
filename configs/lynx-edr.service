@@ -1,0 +1,33 @@
+# Lynx EDR — systemd service unit.
+# Install:
+#   1. Edit WorkingDirectory / ExecStart to match your install path (default /opt/data/edr-agent).
+#   2. sudo cp lynx-edr.service /etc/systemd/system/
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable --now lynx-edr
+#   5. sudo systemctl status lynx-edr
+#
+# NOTE: The agent needs root to read /proc of other users, /var/log/auth.log, and add
+# nftables rules. If you run it as a non-root user, blocking falls back to dry-run and
+# some detection is limited — see configs/agent.yaml.
+
+[Unit]
+Description=Lynx EDR Agent (Linux endpoint detection & response)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/data/edr-agent
+# Use the venv python if present, else system python3:
+ExecStart=/opt/data/edr-agent/.venv/bin/python -m agent.main run
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Keep the agent's own files off the watched/backed-up paths if you set source_dirs
+# to include the install dir (it does NOT by default).
+
+[Install]
+WantedBy=multi-user.target

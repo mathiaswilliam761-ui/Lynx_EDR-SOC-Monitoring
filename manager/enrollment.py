@@ -92,7 +92,7 @@ def validate_enrollment_token(token: str) -> Optional[TokenData]:
     
     token_data = tokens[token]
     expires_at = datetime.datetime.fromisoformat(token_data["expires_at"])
-    if datetime.datetime.utcnow() > expires_at:
+    if datetime.datetime.now(datetime.UTC) > expires_at:
         # Token expired
         del tokens[token]
         save_tokens(tokens)
@@ -125,7 +125,7 @@ async def create_enrollment(request: EnrollmentRequest):
     
     # Generate enrollment token
     enrollment_token = generate_enrollment_token()
-    expires_at = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    expires_at = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=24)
     
     # Store token data
     token_data = TokenData(
@@ -135,7 +135,7 @@ async def create_enrollment(request: EnrollmentRequest):
         os=request.os,
         architecture=request.architecture,
         groups=request.groups,
-        created_at=datetime.datetime.utcnow().isoformat(),
+        created_at=datetime.datetime.now(datetime.UTC).isoformat(),
         expires_at=expires_at.isoformat(),
     )
     
@@ -208,7 +208,7 @@ async def get_install_script(enrollment_token: str):
 # Agent: {token_data.agent_name} ({token_data.agent_id})
 # OS: {token_data.os}
 # Groups: {",".join(token_data.groups)}
-# Generated: {datetime.datetime.utcnow().isoformat()}Z
+# Generated: {datetime.datetime.now(datetime.UTC).isoformat()}Z
 
 set -e
 

@@ -617,7 +617,7 @@ class DashboardServer:
         
         enrollment_token = secrets.token_urlsafe(32)
         agent_id = secrets.token_urlsafe(16)
-        expires_at = (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat()
+        expires_at = (datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=24)).isoformat()
         
         # Store token (using the same file as enrollment.py)
         TOKENS_FILE = "/opt/data/edr-agent/manager/enrollment_tokens.json"
@@ -634,8 +634,8 @@ class DashboardServer:
             "os": body.get("os", "linux"),
             "architecture": body.get("architecture", "x86_64"),
             "groups": groups,
-            "created_at": datetime.datetime.utcnow().isoformat(),
-            "expires_at": (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat(),
+            "created_at": datetime.datetime.now(datetime.UTC).isoformat(),
+            "expires_at": (datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=24)).isoformat(),
         }
         tokens[enrollment_token] = token_data
         with open(TOKENS_FILE, "w") as f:
@@ -648,7 +648,7 @@ class DashboardServer:
             "enrollment_token": enrollment_token,
             "agent_id": agent_id,
             "install_command": f"curl -sSL {manager_url}/enroll/{enrollment_token} | bash",
-            "expires_at": (datetime.datetime.utcnow() + datetime.timedelta(hours=24)).isoformat(),
+            "expires_at": (datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=24)).isoformat(),
         }
 
     def _revoke_agent(self, agent_id: str):

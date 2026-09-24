@@ -58,9 +58,9 @@ class LynxCA:
         ).serial_number(
             x509.random_serial_number()
         ).not_valid_before(
-            datetime.datetime.utcnow()
+            datetime.datetime.now(datetime.UTC)
         ).not_valid_after(
-            datetime.datetime.utcnow() + datetime.timedelta(days=3650)  # 10 years
+            datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=3650)  # 10 years
         ).add_extension(
             x509.BasicConstraints(ca=True, path_length=None),
             critical=True,
@@ -156,9 +156,9 @@ class LynxCA:
         ).serial_number(
             x509.random_serial_number()
         ).not_valid_before(
-            datetime.datetime.utcnow()
+            datetime.datetime.now(datetime.UTC)
         ).not_valid_after(
-            datetime.datetime.utcnow() + datetime.timedelta(days=365)  # 1 year
+            datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=365)  # 1 year
         ).add_extension(
             x509.BasicConstraints(ca=False, path_length=None),
             critical=True,
@@ -192,7 +192,7 @@ class LynxCA:
             "agent_name": agent_name,
             "groups": groups or ["default"],
             "serial_number": str(cert.serial_number),
-            "issued_at": datetime.datetime.utcnow().isoformat(),
+            "issued_at": datetime.datetime.now(datetime.UTC).isoformat(),
             "expires_at": cert.not_valid_after_utc.isoformat(),
             "revoked": False,
         }
@@ -214,7 +214,7 @@ class LynxCA:
         index = self._load_index()
         if agent_id in index and not index[agent_id].get("revoked", False):
             index[agent_id]["revoked"] = True
-            index[agent_id]["revoked_at"] = datetime.datetime.utcnow().isoformat()
+            index[agent_id]["revoked_at"] = datetime.datetime.now(datetime.UTC).isoformat()
             self._save_index(index)
             return True
         return False

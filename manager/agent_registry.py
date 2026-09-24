@@ -66,7 +66,7 @@ class AgentRegistry:
                 "architecture": "x86_64",
                 "groups": ["default"],
                 "status": "enrolled",
-                "enrolled_at": datetime.datetime.utcnow().isoformat(),
+                "enrolled_at": datetime.datetime.now(datetime.UTC).isoformat(),
                 "last_seen": None,
                 "certificate_pem": certificate_pem,
                 "key_pem": key_pem,
@@ -109,7 +109,7 @@ class AgentRegistry:
                 last_seen = agent.get("last_seen")
                 if last_seen:
                     last_seen_dt = datetime.datetime.fromisoformat(last_seen)
-                    if datetime.datetime.utcnow() - last_seen_dt > datetime.timedelta(minutes=5):
+                    if datetime.datetime.now(datetime.UTC) - last_seen_dt > datetime.timedelta(minutes=5):
                         if status == "online":
                             status = "stale"
                     else:
@@ -143,7 +143,7 @@ class AgentRegistry:
             last_seen = agent.get("last_seen")
             if last_seen:
                 last_seen_dt = datetime.datetime.fromisoformat(last_seen)
-                if datetime.datetime.utcnow() - last_seen_dt > datetime.timedelta(minutes=5):
+                if datetime.datetime.now(datetime.UTC) - last_seen_dt > datetime.timedelta(minutes=5):
                     if status == "online":
                         status = "stale"
                 else:
@@ -170,7 +170,7 @@ class AgentRegistry:
             if agent_id not in data:
                 return False
             
-            data[agent_id]["last_seen"] = datetime.datetime.utcnow().isoformat()
+            data[agent_id]["last_seen"] = datetime.datetime.now(datetime.UTC).isoformat()
             data[agent_id]["status"] = "online"
             self._save(data)
             return True
@@ -184,7 +184,7 @@ class AgentRegistry:
             
             data[agent_id]["revoked"] = True
             data[agent_id]["status"] = "revoked"
-            data[agent_id]["revoked_at"] = datetime.datetime.utcnow().isoformat()
+            data[agent_id]["revoked_at"] = datetime.datetime.now(datetime.UTC).isoformat()
             self._save(data)
             return True
     
